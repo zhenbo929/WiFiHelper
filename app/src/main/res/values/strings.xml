@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">WiFi密码查看助手</string>
+
+    <string name="wifi_name">WIFI：{0}</string>
+    <string name="wifi_pwd">密码：{0}</string>
+
+    <string name="loading">加载中…</string>
+    <string name="welcome_msg">欢迎使用，长按可以复制WIFI密码！</string>
+    <string name="wifi_no_pwd">该WiFi无需密码</string>
+    <string name="copy_pwd_succeed_msg">密码已复制到剪切板！</string>
+    <string name="analysis_error_msg">WIFI配置信息解析失败！</string>
+    <string name="no_root_msg">您还没有获取Root权限！</string>
+</resources>
