@@ -12,17 +12,18 @@ public class CodeUtil {
 
     /**
      * UTF-8编码 转换为对应的 汉字
-     *
+     * <p>
      * URLEncoder.encode("上海", "UTF-8") ---> %E4%B8%8A%E6%B5%B7
      * URLDecoder.decode("%E4%B8%8A%E6%B5%B7", "UTF-8") --> 上 海
-     *
+     * <p>
      * convertUTF8ToString("E4B88AE6B5B7")
      * E4B88AE6B5B7 --> 上海
      *
      * @param s
+     * @param code
      * @return
      */
-    public static String convertUTF8ToString(String s) {
+    public static String convertUTF8ToString(String s, String code) {
         if (s == null || s.equals("")) {
             return null;
         }
@@ -43,13 +44,14 @@ public class CodeUtil {
                 pos++;
             }
 
-            return new String(buffer, 0, pos, "UTF-8");
+            return new String(buffer, 0, pos, code);
 
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
         return s;
     }
+
 
     /**
      * 将文件名中的汉字转为UTF8编码的串,以便下载时能正确显示另存的文件名.
@@ -88,5 +90,17 @@ public class CodeUtil {
         }
         return sb.toString();
     }
+
+    /**
+     *
+     * @param WIFIName
+     * @return
+     */
+    public static boolean isGBK(String WIFIName){
+
+        String s = CodeUtil.convertStringToUTF8(CodeUtil.convertUTF8ToString(WIFIName, "UTF-8"));
+        return s.contains("EFBFBD");
+    }
+
 
 }

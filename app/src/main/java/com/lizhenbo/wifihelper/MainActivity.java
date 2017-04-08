@@ -7,6 +7,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.LinearLayout;
@@ -19,6 +20,7 @@ import com.lizhenbo.wifihelper.model.WifiInfo;
 import com.lizhenbo.wifihelper.utils.CodeUtil;
 import com.lizhenbo.wifihelper.utils.ShellUtils;
 
+import java.io.UnsupportedEncodingException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -42,7 +44,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initViews();
-        readWifiConfigToListView();
+        try {
+            readWifiConfigToListView();
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -74,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 读取WiFi配置文件
      */
-    private void readWifiConfigToListView() {
+    private void readWifiConfigToListView() throws UnsupportedEncodingException {
         String[] commands = new String[]{"cat /data/misc/wifi/wpa_supplicant.conf\n", "exit\n"};
 
         ShellUtils.CommandResult cr = ShellUtils.execCommand(commands, true, true);
@@ -103,19 +109,30 @@ public class MainActivity extends AppCompatActivity {
         //遍历所有节点，找到每个的WiFi信息（WiFi名字和密码）
         while (matcher.find()) {
             String networkBlock = matcher.group();
+            Log.i("tag","打印一个WIFI节点："+networkBlock);
             Pattern ssid = Pattern.compile("ssid=([^\\s]+)\\s");
             Matcher ssidMatcher = ssid.matcher(networkBlock);
             // TODO: 2017/3/4 待测试功能 
             //这里来获取WiFi的名字，比较坑的是name的获取有两种形式
             //第一种：没有中文,ssid="name"
             //第二种：包含中文,ssid=2f2e25ac(中文utf-8格式的16进制数)
+            //第三种：包含中文,ssid=baabd6bed4b6(中文gbk格式的16进制数)
             //解决方式:先截取ssid=和\s空格中间的部分
             if (ssidMatcher.find()) {
                 String WiFiname = ssidMatcher.group(1);
-                if(WiFiname.contains("\"")){
+                Log.i("tag","系统保存的WIFI名字:"+WiFiname);
+                if(WiFiname.contains("\"")){//第一种
                     WiFiname=WiFiname.replace("\"","");
-                }else {
-                    WiFiname= CodeUtil.convertUTF8ToString(WiFiname);
+                    Log.i("tag","第一种方式WIFI名字:"+WiFiname);
+                }else{
+
+                    if(CodeUtil.isGBK(WiFiname)){//第三种
+                        WiFiname= CodeUtil.convertUTF8ToString(WiFiname,"GBK");
+                        Log.i("tag","第三种方式WIFI名字:"+WiFiname);
+                    }else {//第二种
+                        WiFiname= CodeUtil.convertUTF8ToString(WiFiname,"UTF-8");
+                        Log.i("tag","第二种方式WIFI名字:"+WiFiname);
+                    }
                 }
                 model = new WifiInfo();
                 model.setWifiName(WiFiname);
